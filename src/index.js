@@ -5,6 +5,9 @@ import AuthorQuiz from './AuthorQuiz';
 import * as serviceWorker from './serviceWorker';
 import './bootstrap.min.css';
 import { shuffle, sample } from 'underscore';
+import { BrowserRouter, Route, withRouter } from 'react-router-dom';
+import AddAuthorForm from './AddAuthorForm';
+
 
 const authors = [
 
@@ -46,30 +49,65 @@ const authors = [
     }
 
 ];
-function getTurnData(authors){
+
+function getTurnData(authors) {
   const allBooks = authors.reduce(function (p, c, i) {
-    return p.concat(c.books);
-  } , []);
+      return p.concat(c.books);
+  }, []);
+
   const fourRandomBooks = shuffle(allBooks).slice(0, 4);
   const answer = sample(fourRandomBooks);
 
   return {
-    books: fourRandomBooks,
-    author: authors.find((author) =>
-        author.books.some((title) =>
-            title === answer))
+      books: fourRandomBooks,
+      author: authors.find((author) =>
+          author.books.some((title) =>
+              title === answer))
   };
-
 }
 
-const state = {
-  turnData: getTurnData(authors)
-};
+function resetState() {
+  return {
+    turnData: getTurnData(authors),
+    highlight: ''
+  };
+}
 
-ReactDOM.render(
-    <AuthorQuiz {...state}/>,
-  document.getElementById('root')
+let state = resetState();
+
+function onAnswerSelected(answer){
+  const isCorrect = state.turnData.author.books.some((book) => book === answer);
+  state.highlight = isCorrect ? 'correct' : 'wrong';
+  render();
+}
+
+function App() {
+  return <AuthorQuiz {...state} 
+  onAnswerSelected={onAnswerSelected} 
+  onContinue ={() => {
+    state = resetState();
+    render();
+  }}/>;
+}
+
+const AuthorWrapper = withRouter(({ history }) =>
+   <AddAuthorForm onAddAuthor={(author) => {
+       authors.push(author);
+       history.push('/');
+  }} />
 );
+
+function render() {
+  ReactDOM.render( 
+    <BrowserRouter>
+      <React.Fragment>
+          <Route exact path='/' component={App} />
+          <Route path='/add' component={AuthorWrapper} />
+      </React.Fragment>
+    </BrowserRouter>,
+    document.getElementById('root')); 
+}
+render();
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

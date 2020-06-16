@@ -2,6 +2,9 @@ import React from 'react';
 import './App.css';
 import './bootstrap.min.css';
 import { tsBooleanKeyword } from '@babel/types';
+import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types'
+
 
 function Hero() {
   return (
@@ -22,22 +25,51 @@ function Book({ title, onClick }) {
   );
 }
 
-function Turn({author, books}){
+function Turn({author, books, highlight, onAnswerSelected}){
+
+  function hightlightToBgColor(highlight){
+    const mapping = {
+      'none': '',
+      'correct': 'green',
+      'wrong': 'red'
+    };
+    return mapping[highlight];
+  }
+
   return (
-    <div className="row turn" style={{backgroundColor:"white"}}>
+    <div className="row turn" style={{backgroundColor: hightlightToBgColor(highlight)}}>
       <div className="col-4 offset-1">
         <img src={author.imageUrl} className="authorimage" alt="Author"/>
       </div>
       <div className="col-6">
-        {books.map((title) => <Book title={title} key={title} />)}
+        {books.map((title) => <Book title={title} key={title} onClick={onAnswerSelected} />)}
       </div>
     </div>
   );
+
+  Turn.propTypes = {
+    author: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      imageUrl: PropTypes.string.isRequired,
+      imageSource: PropTypes.string.isRequired,
+      books: PropTypes.arrayOf(PropTypes.string).isRequired
+    }),
+    books: PropTypes.arrayOf(PropTypes.string).isRequired,
+    onAnswerSelected: PropTypes.func.isRequired,
+    highlight: PropTypes.string.isRequired
+  };
 }
 
-function Continue(){
+function Continue({ show, onContinue }) {
   return (
-    <div/>
+    <div className='row continue'>
+      {show
+        ? <div className='col-11'>
+          <button className='btn btn-primary btn-lg float-right' onClick={onContinue}>Continue</button>
+        </div>
+        : null
+      }
+    </div>
   );
 }
 
@@ -54,12 +86,13 @@ function Footer() {
     </div>
   );
 }
-function AuthorQuiz({turnData}) {
+function AuthorQuiz({turnData, highlight, onAnswerSelected, onContinue}) {
   return (
     <div className="container-fluid"> 
       <Hero/>
-      <Turn {...turnData}/>
-      <Continue/>
+      <Turn {...turnData} highlight={highlight} onAnswerSelected={onAnswerSelected} />
+      <Continue show={highlight === 'correct'} onContinue={onContinue} />
+      <p><Link to="/add">Add an Author</Link></p>
       <Footer/>
     </div>
   );
