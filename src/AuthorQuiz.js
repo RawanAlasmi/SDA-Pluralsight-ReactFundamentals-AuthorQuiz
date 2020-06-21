@@ -3,7 +3,8 @@ import './App.css';
 import './bootstrap.min.css';
 import { tsBooleanKeyword } from '@babel/types';
 import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types'
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
 
 function Hero() {
@@ -86,6 +87,26 @@ function Footer() {
     </div>
   );
 }
+
+function mapStateToProps(state) {
+  return {
+    turnData: state.turnData,
+    highlight: state.highlight
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    onAnswerSelected: (answer) => {
+      dispatch({ type: 'ANSWER_SELECTED', answer })
+    },
+    onContinue: () => {
+      dispatch({ type: 'CONTINUE' })
+    }
+  };
+}
+
+const AuthorQuiz = connect(mapStateToProps, mapDispatchToProps)(
 function AuthorQuiz({turnData, highlight, onAnswerSelected, onContinue}) {
   return (
     <div className="container-fluid"> 
@@ -97,5 +118,6 @@ function AuthorQuiz({turnData, highlight, onAnswerSelected, onContinue}) {
     </div>
   );
 }
+);
 
 export default AuthorQuiz;
